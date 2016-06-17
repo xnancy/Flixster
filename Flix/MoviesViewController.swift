@@ -184,4 +184,70 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         }
         
     }
+    
+    func selection (option: Int) {
+        var url: NSURL?
+        if option == 0 {
+            url = NSURL(string: "https://api.themoviedb.org/3/discover/movie?primary_release_date.gte=2014-05-15&primary_release_date.lte=2014-6-15&api_key=59b1d112f52c2b668627198c51f733b8")
+        } else if option == 1 {
+            url = NSURL(string: "https://api.themoviedb.org/3/discover/movie?sort_by=popularity.desc&api_key=59b1d112f52c2b668627198c51f733b8")
+        } else if option == 2 {
+            url = NSURL(string: "https://api.themoviedb.org/3/discover/movie?certification_country=US&certification.lte=G&sort_by=popularity.desc&api_key=59b1d112f52c2b668627198c51f733b8")
+        } else if option == 3 {
+            url = NSURL(string: "https://api.themoviedb.org/3/discover/movie/?certification_country=US&certification=R&sort_by=vote_average.desc&api_key=59b1d112f52c2b668627198c51f733b8")
+        }
+        
+        // ... Create the NSURLRequest (myRequest) ...
+        let request = NSURLRequest(
+            URL: url!,
+            cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData,
+            timeoutInterval: 10)
+        
+        // Configure session so that completion handler is executed on main UI thread
+        let session = NSURLSession(
+            configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
+            delegate:nil,
+            delegateQueue:NSOperationQueue.mainQueue()
+        )
+        
+        MBProgressHUD.showHUDAddedTo(self.view, animated: true)
+        
+        let task: NSURLSessionDataTask = session.dataTaskWithRequest(request, completionHandler: { (dataOrNil, response, error) in if let data = dataOrNil {
+            
+            if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
+                data, options:[]) as? NSDictionary {
+                //print("response: \(responseDictionary)")
+                self.movies = responseDictionary["results"] as? [NSDictionary]
+                // print(self.movies)
+                self.movieTableView.reloadData()}
+            }
+            
+            self.showResults = []
+            for index in 0...(self.movies!.count-1) {
+                self.showResults.append(index)
+            }
+            
+            MBProgressHUD.hideHUDForView(self.view, animated: true)
+            
+            // Reload the tableView now that there is new data
+            self.movieTableView.reloadData()
+            
+            // Tell the refreshControl to stop spinning
+            self.refreshControl!.endRefreshing()
+        });
+        task.resume()
+    }
+    @IBAction func trending(sender: AnyObject) {
+        selection(0)
+    }
+    
+    @IBAction func popular(sender: AnyObject) {
+        selection(1)
+    }
+    @IBAction func kids(sender: AnyObject) {
+        selection(2)
+    }
+    @IBAction func r(sender: AnyObject) {
+        selection(3)
+    }
 }
