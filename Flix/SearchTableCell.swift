@@ -10,6 +10,7 @@ import UIKit
 
 class SearchTableCell: UITableViewCell {
 
+    @IBOutlet weak var cellMovieName: UILabel!
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
